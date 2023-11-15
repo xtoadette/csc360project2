@@ -10,17 +10,24 @@ from selectorlib import Extractor
 import json
 import time
 
+class AmazonReview:
+    def __init__(self, profile_name, review_text):
+        self.profile_name = profile_name
+        self.review_text = review_text
+
+    def print_review(self):
+        print(f"{self.profile_name} + {self.review_text}")
 
 def amazon():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # Navigate to the Amazon product page
-    url = "https://www.amazon.com/Bose-QuietComfort-Bluetooth-Cancelling-Headphones/product-reviews/B09NCHTW21/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews"
+    url = "https://www.amazon.com/Bose-QuietComfort-45-Bluetooth-Canceling-Headphones/product-reviews/B098FKXT8L/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews"
     driver.get(url)
     driver.implicitly_wait(5)
 
-    reviewList = []
-    userURL = []
-    users = {}
+    reviews = []
+    users = []
+    reviews_temp = []
 
     time.sleep(3) # allow time to load
 
@@ -31,23 +38,27 @@ def amazon():
     soup = BeautifulSoup(page_source, 'html.parser')
 
     # Extract and print the reviews
-    reviews = soup.find_all('div', attrs={"data-hook": "review"})
+    scraped_reviews = soup.find_all('div', attrs={"data-hook": "review"})
     profile_links = soup.find_all('a', attrs={"class": "a-profile"})
     real_links = [profile_link["href"] for profile_link in profile_links]
-    linkcounter = 0
-    for i in reviews:
-        reviewList.append((i.find("span", attrs={"data-hook": "review-body"})).text)
-        users[(i.find("span", attrs={"class": "a-profile-name"})).text] = reviewList[linkcounter]
-        linkcounter += 1
+    print(type(real_links))
+    for i in scraped_reviews:
+        reviews_temp.append((i.find("span", attrs={"data-hook": "review-body"})).text)
+        users.append(i.find("span", attrs={"class": "a-profile-name"}).text)
+
+    for link in range(len(real_links)):
+        driver.get("https://amazon.com" + real_links[link])
+        driver.implicitly_wait(5)
 
     # Close the WebDriver
     driver.quit()
 
-    for review in reviewList:
-        print(review)
+    # create reviews
+    for i in range(len(reviews_temp)):
+        reviews.append(AmazonReview(users[i], reviews_temp[i]))
 
-    for user in users:
-        print(user)
+    for review in reviews:
+        review.print_review()
 
 
 # call function
