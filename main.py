@@ -6,12 +6,13 @@ import time
 
 
 class AmazonReview:
-    def __init__(self, profile_name, review_text):
+    def __init__(self, profile_name, review_text, star_rating):
         self.profile_name = profile_name
         self._review_text = review_text
+        self.star_rating = star_rating
 
     def print_review(self):
-        print(f"{self.profile_name} + {self.review_text}")
+        print(f"{self.profile_name} + {self.review_text} + {self.star_rating}")
 
     @property
     def review_text(self):
@@ -25,6 +26,7 @@ def amazon():
     users = []
     urls = []
     reviews_temp = []
+    stars = []
 
     for i in range(1):
         if i == 0:
@@ -51,6 +53,8 @@ def amazon():
                 urls.append("https://www.amazon.com" + profile_link.get("href"))
                 reviews_temp.append((j.find("span", attrs={"data-hook": "review-body"})).text)
                 users.append(j.find("span", attrs={"class": "a-profile-name"}).text)
+                star = j.find("i", attrs={"data-hook": "review-star-rating"}).text
+                stars.append(float(str(star[0:2])))
 
     """debug
         for link in range(len(urls)):
@@ -63,7 +67,7 @@ def amazon():
 
     # create reviews
     for j in range(len(reviews_temp)):
-        reviews.append(AmazonReview(users[j], reviews_temp[j]))
+        reviews.append(AmazonReview(users[j], reviews_temp[j], stars[j]))
 
     # debug: print(reviews[0].review_text)
 
@@ -72,9 +76,14 @@ def amazon():
         if len(reviews[j].review_text) <= 300:
             reviews.pop(j)
 
+
+"""
     for review in reviews:
         review.print_review()
 
+    for star in stars:
+        print(star)
+"""
 
 # call function
 amazon()
