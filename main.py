@@ -115,22 +115,18 @@ def amazon():
 
         # second part of logic: check to see how many reviews they have
         # not many reviews == not credible
-        j = len(review_cards) - 1  # start from the last index
-        while j >= 0:
-            if len(review_cards[j]) <= 3:
-                tooFewReviews += 1
-                reviews.pop(i)
-                continue
-            j -= 1
+        if len(review_cards) <= 3:
+            tooFewReviews += 1
+            reviews.pop(i)
+            continue
 
         # third part of logic: if they have a significant amount of reviews, check if they're too positive
         # all good reviews == nothing is bad == too positive of a person
         int_rating = 0
-        k = len(review_cards) - 1  # start from the last index
-        while k >= 0:
-            str_rating = review_cards[k].find("i", attrs={"class": "a-icon a-icon-star a-star-5 profile-at-review-stars"}).text
-            int_rating += str_rating[0]
-            k -= 1
+        for card in range(len(review_cards)):
+            str_rating = review_cards[card].find("span", attrs={"class": "a-icon-alt"}).text
+            int_rating += int(str_rating[0])
+
         avg_rating = int_rating / float(len(review_cards) - 1)
         if avg_rating > 4.75:
             tooPositive += 1
