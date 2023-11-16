@@ -34,6 +34,7 @@ def amazon():
     reviews = []
     users = []
     urls = []
+    visited_links = set()
     reviews_temp = []
     stars = []
 
@@ -65,12 +66,6 @@ def amazon():
                 star = j.find("i", attrs={"data-hook": "review-star-rating"}).text
                 stars.append(float(str(star[0:2])))
 
-    """debug
-        for link in range(len(urls)):
-            driver.get(urls[link])
-            driver.implicitly_wait(5)
-            time.sleep(1)
-    """
     # Close the WebDriver
 
     # create reviews
@@ -102,9 +97,15 @@ def amazon():
             continue
 
         # start visiting profiles
+        if reviews[i].link in visited_links:
+            i -= 1
+            continue
+
         driver.get(reviews[i].link)
         driver.implicitly_wait(5)
         time.sleep(2)  # allow some time to load
+
+        visited_links.add(reviews[i].link)  # Add the visited link to the set
 
         page_source = driver.page_source
         # parse the page source
@@ -128,7 +129,7 @@ def amazon():
             int_rating += int(str_rating[0])
 
         avg_rating = int_rating / float(len(review_cards) - 1)
-        if avg_rating > 4.75:
+        if avg_rating > 4.90:
             tooPositive += 1
             reviews.pop(i)
             continue
