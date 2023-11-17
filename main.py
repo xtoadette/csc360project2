@@ -30,7 +30,7 @@ class AmazonReview:
 
 def amazon():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    # Navigate to the Amazon product page
+    num_pages = 16
     reviews = []
     users = []
     urls = []
@@ -38,7 +38,7 @@ def amazon():
     reviews_temp = []
     stars = []
 
-    for i in range(2):
+    for i in range(num_pages):
         if i == 0:
             url = "https://www.amazon.com/Bose-QuietComfort-45-Bluetooth-Canceling-Headphones/product-reviews/B098FKXT8L/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews"
         else:
@@ -66,13 +66,9 @@ def amazon():
                 star = j.find("i", attrs={"data-hook": "review-star-rating"}).text
                 stars.append(float(str(star[0:2])))
 
-    # Close the WebDriver
-
     # create reviews
     for i in range(len(reviews_temp)):
         reviews.append(AmazonReview(users[i], reviews_temp[i], stars[i], urls[i]))
-
-    # debug: print(reviews[0].review_text)
 
     currentRating = 0.0
     adjustedRating = 0.0
@@ -119,6 +115,7 @@ def amazon():
         if len(review_cards) <= 3:
             tooFewReviews += 1
             reviews.pop(i)
+            i -= 1
             continue
 
         # third part of logic: if they have a significant amount of reviews, check if they're too positive
@@ -132,6 +129,7 @@ def amazon():
         if avg_rating > 4.90:
             tooPositive += 1
             reviews.pop(i)
+            i -= 1
             continue
 
         i -= 1
@@ -142,7 +140,7 @@ def amazon():
     adjustedRating = adjustedRating / float(len(reviews))
 
     # print ratings
-    print("Base rating: " + str(currentRating))
+    print("Base rating: " + str(round(currentRating, 2)))
     print("Too short of a review: " + str(tooShort))
     print("Not enough reviews: " + str(tooFewReviews))
     print("Too many positive reviews: " + str(tooPositive))
